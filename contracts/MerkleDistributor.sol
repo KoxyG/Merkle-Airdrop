@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
@@ -30,12 +30,10 @@ contract MerkleDistributor {
 
     function claim(bytes32[] calldata merkleProof)
         public
-        virtual
-        override
     {
-        if (addressesClaimed[msg.sender] == 0) revert AlreadyClaimed();
+        if (addressesClaimed[msg.sender] != 0) revert AlreadyClaimed();
+      
 
-        // Verify the merkle proof.
         bytes32 node = keccak256(abi.encodePacked(msg.sender));
 
         if (!MerkleProof.verify(merkleProof, merkleRoot, node)) revert InvalidProof();
@@ -44,5 +42,6 @@ contract MerkleDistributor {
         addressesClaimed[msg.sender] = 1;
         require(IERC20(token).transfer(msg.sender, dropAmount), "Transfer failed");
 
-        emit Claimed(msg.sender, account)
+        emit Claimed(msg.sender, dropAmount);
+}
 }
