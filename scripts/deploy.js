@@ -46,7 +46,7 @@ async function main() {
    
        // the addresses that it is being deployed with to create a tree.
        // serialized and made available to be used to create a proof in the frontend
-       await fs.writeFile("client/src/walletAddresses.json", serializedAddresses);
+       await fs.writeFile("client/walletAddress/walletAddresses.json", serializedAddresses);
      } catch (error) {
        console.error("Error deploying contracts:", error);
      }

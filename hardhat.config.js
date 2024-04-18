@@ -21,7 +21,23 @@ module.exports = {
      
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
+      gasPrice: 250000000000
     },
+  },
+  etherscan: {
+    apiKey: {
+      scrollSepolia: "",
+    },
+    customChains: [
+      {
+        network: 'scrollSepolia',
+        chainId: 534351,
+        urls: {
+          apiURL: 'https://api-sepolia.scrollscan.com/api',
+          browserURL: 'https://sepolia.scrollscan.com/',
+        },
+      },
+    ],
   },
   paths: {
     artifacts: "./Abi/artifacts"
