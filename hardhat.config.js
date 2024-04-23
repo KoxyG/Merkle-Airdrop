@@ -1,5 +1,7 @@
 require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
+// require("@nomiclabs/hardhat-etherscan");
+require("@nomicfoundation/hardhat-verify");
 
 /** @type import('hardhat/config').HardhatUserConfig */
 
@@ -21,12 +23,12 @@ module.exports = {
      
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-      gasPrice: 250000000000
+     
     },
   },
   etherscan: {
     apiKey: {
-      scrollSepolia: "",
+      scrollSepolia: process.env.SCROLL_API_KEY
     },
     customChains: [
       {

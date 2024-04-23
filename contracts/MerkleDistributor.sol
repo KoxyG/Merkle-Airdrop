@@ -1,47 +1,47 @@
-// SPDX-License-Identifier: GPL-3.0-or-later
-pragma solidity ^0.8.20;
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.19;
 
-import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol";
+import "@openzeppelin/contracts/token/ERC1155/ERC1155.sol";
 
 
-error AlreadyClaimed();
 error InvalidProof();
 
-contract MerkleDistributor {
+contract MerkleDistributor is ERC1155("") {
    
-    address public immutable token;
     bytes32 public immutable merkleRoot;
     uint256 public dropAmount;
-
+    uint256 public nextID = 0;
+    
+   
+   
     event Claimed(address indexed account, uint256 _dropAmount);
 
+    function mint(address account, uint256 amount) internal {
+        nextID++;
+        _mint(account, nextID, amount, "");
+    }
+   
 
-    mapping(address => uint) private addressesClaimed;
+    mapping(address => bool) addressesClaimed;
+   
 
-    // This is a packed array of booleans.
-    mapping(uint256 => uint256) private claimedBitMap;
-
-    constructor(address token_, bytes32 merkleRoot_, uint256 dropAmount_) {
-        token = token_;
+    constructor(bytes32 merkleRoot_, uint256 dropAmount_) {
         merkleRoot = merkleRoot_;
         dropAmount = dropAmount_;
     }
 
+
     function claim(bytes32[] calldata merkleProof)
         public
     {
-        if (addressesClaimed[msg.sender] != 0) revert AlreadyClaimed();
-      
-
+        require(!addressesClaimed[msg.sender], "Already claimed");
         bytes32 node = keccak256(abi.encodePacked(msg.sender));
 
         if (!MerkleProof.verify(merkleProof, merkleRoot, node)) revert InvalidProof();
-
-        // Mark it claimed and send the token.
-        addressesClaimed[msg.sender] = 1;
-        require(IERC20(token).transfer(msg.sender, dropAmount), "Transfer failed");
-
+        addressesClaimed[msg.sender] =  true;
+        mint(msg.sender, dropAmount);
         emit Claimed(msg.sender, dropAmount);
-}
+    }
+    
 }

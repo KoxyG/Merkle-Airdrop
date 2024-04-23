@@ -1,91 +1,97 @@
 const { MerkleTree } = require('merkletreejs')
 const KECCAK256 = require('keccak256');
 const { expect } = require("chai");
+const { web3 } = require("hardhat");
 
 //deployment and first interaction.
 describe('MerkleDistributor', () => {
+  let signer1;
+
   beforeEach(async () => {
-    [signer1, signer2, signer3, signer4, signer5, signer6, signer7, signer8] = await ethers.getSigners();
+    
 
-    walletAddresses = [signer1, signer2, signer3, signer4, signer5, signer6, signer7, signer8].map((s) => s.address)
+    walletAddresses = ["0x43bE1FCEeddeD2d2885f58b26C7444314b31664d", "0x7afe4313D301616526944F5C6A7764bF62FF5eBE", "0x893d9FfDF09e06BB3CD9eb57917bf0BF49359624", "0x4147D470176837Fa64F1670e94D0Cdb4B1D13A82"].map((s) => s.address)
 
-    leaves = walletAddresses.map(x => KECCAK256(x))
+    // Randomly select 5 addresses
+    const selectedAddresses = shuffle(walletAddresses).slice(0, 2);
+
+    const leaves = selectedAddresses.map(x => KECCAK256(x))
 
     tree = new MerkleTree(leaves, KECCAK256, { sortPairs: true })
 
-    EventCoin = await ethers.getContractFactory('EventCoin', signer1);
-    token = await EventCoin.deploy();
-
-    MerkleDistributor = await ethers.getContractFactory('MerkleDistributor', signer1);
+    const Factory = await ethers.getContractFactory('MerkleDistributorFactory', signer1);
+    const factory = await Factory.deploy();
+    await factory.deployed();
 
     //passing argument specicied in constructor of MerkleDistributor with drop amount of 500coins.
-    distributor = await MerkleDistributor.deploy(token.address, tree.getHexRoot(), 500);
+    distributor = await factory.deployDistributor(tree.getHexRoot(), 500);
 
-    //minting 4000 wei of tokens and send it to the deployer address
-    await token.connect(signer1).mint(
-      distributor.address,
-      '4000'
-    )
+    const accounts = await ethers.getSigners();
+    signer1 = accounts[0];
+  
+
+    
   });
 
+  function shuffle(array) {
+    let currentIndex = array.length, temporaryValue, randomIndex;
 
+    while (currentIndex !== 0) {
+      randomIndex = Math.floor(Math.random() * currentIndex);
+      currentIndex -= 1;
+  
+      temporaryValue = array[currentIndex];
+      array[currentIndex] = array[randomIndex];
+      array[randomIndex] = temporaryValue;
+    }
+  
+    return array;
+  }
 
-  //FIRST TEST
-  //8 accounts hashed as our leaves
-  describe('8 account tree', () => {
-    //An account to be able to claim just once and fail the other time
-    it('successful and unsuccessful claim', async () => {
-      expect(await token.balanceOf(signer1.address)).to.be.equal(0)
+  // First Test
+  describe('Claiming tokens', () => {
+    it('allows successful claim and prevents duplicate claim', async () => {
+      const accounts = await ethers.getSigners();
+      const signer1 = accounts[0];
+      
 
-      //a proof is what is being passed to the merkle tree to check if the address is part of the tree
-      const proof = tree.getHexProof(KECCAK256(signer1.address))
+      // Generate proof for signer1
+      const proof1 = tree.getHexProof(web3.utils.keccak256(signer1.address));
 
-      await distributor.connect(signer1).claim(proof)
+      // Claim tokens for signer1
+      await distributor.connect(signer1).claim(proof1);
+      expect(await token.balanceOf(signer1.address)).to.equal(500);
 
-      expect(await token.balanceOf(signer1.address)).to.be.equal(500)
+      // Attempt to claim tokens for signer1 again, should fail
+      await expect(
+        distributor.connect(signer1).claim(proof1)
+      ).to.be.revertedWith('MerkleDistributor: Drop already claimed.');
+    });
 
-      //calling it again, and expecting it to fail and revert.
-      expect(
-          distributor.connect(signer1).claim(proof)
-        ).to.be.revertedWith(
-          'MerkleDistributor: Drop already claimed.'
-        )
+    it('prevents claim with invalid proof', async () => {
+      const accounts = await ethers.getSigners();
+      const signer3 = accounts[2];
 
-      //check token balance, it should still be 500
-      expect(await token.balanceOf(signer1.address)).to.be.equal(500)
+      // Generate an invalid proof
+      const invalidProof = ['0x'];
 
-    })
+      // Attempt to claim with invalid proof, should fail
+      await expect(
+        distributor.connect(signer3).claim(invalidProof)
+      ).to.be.revertedWith('MerkleDistributor: Invalid proof.');
+    });
 
+    it('emits Claimed event on successful claim', async () => {
+      const accounts = await ethers.getSigners();
+      const signer1 = accounts[0];
 
-    //TEST 2
+      // Generate proof for signer1
+      const proof1 = tree.getHexProof(web3.utils.keccak256(signer1.address));
 
-    it('unsuccessful claim', async () => {
-      //using an address that is not included in the tree to claim
-      const generatedAddress = '0x4dE8dabfdc4D5A508F6FeA28C6f1B288bbdDc26e'
-
-      //generate proof for that address
-      const proof2 = tree.getHexProof(KECCAK256(generatedAddress))
-
-      //expect it to revert while claiming with invalid proof
-      expect(
-          distributor.connect(signer1).claim(proof2)
-        ).to.be.revertedWith(
-          'MerkleDistributor: Invalid proof.'
-        )
-    })
-
-
-    //TEST 3
-    // checks for emitting an event
-    it('emits a successful event', async () => {
-      //generating a proof for the address
-      const proof = tree.getHexProof(KECCAK256(signer1.address))
-
-      //expecting it to emit an event with the address and the amount of coins claimed
-      await expect(distributor.connect(signer1).claim(proof))
-        .to.emit(distributor, 'Claimed')
-        .withArgs(signer1.address, 500)
-    })
-
-  })
+      // Expect Claimed event to be emitted on successful claim
+      await expect(
+        distributor.connect(signer1).claim(proof1)
+      ).to.emit(distributor, 'Claimed').withArgs(signer1.address, 500);
+    });
+  });
 })
