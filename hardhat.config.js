@@ -2,6 +2,7 @@ require("@nomiclabs/hardhat-waffle");
 require("dotenv").config();
 // require("@nomiclabs/hardhat-etherscan");
 require("@nomicfoundation/hardhat-verify");
+require("@openzeppelin/hardhat-upgrades")
 
 /** @type import('hardhat/config').HardhatUserConfig */
 
@@ -16,6 +17,11 @@ module.exports = {
       }, 
       
   },
+  },
+  defender: {
+    apiKey: process.env.API_KEY,
+    apiSecret: process.env.API_SECRET,
+    useDefenderDeploy: true,
   },
   networks: {
     scrollSepolia: {
