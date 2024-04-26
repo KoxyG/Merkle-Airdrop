@@ -8,7 +8,7 @@ const { ethers } = require("hardhat");
 
 //deployment and first interaction.
 describe("MerkleDistributor", () => {
-  // let signer1;
+  
   let merkleTree;
   let distributor;
   let distributorAddress
@@ -17,38 +17,49 @@ describe("MerkleDistributor", () => {
   
 
   beforeEach(async () => {
+
     [signer1, signer2, signer3, signer4] = await ethers.getSigners();
 
     whitelistAddress = [signer1.address, signer2.address, signer3.address, signer4.address]
+
+    // // Randomly select 2 addresses
+    // const selectedAddresses = shuffle(walletAddresses).slice(0, 2);
 
     const leaves = whitelistAddress.map(address => {
       return address
     })
 
+    // generate a tree
     merkleTree = new MerkleTree(leaves, keccak256, {  hashLeaves: true, sortPairs: true });
+    
+    // generate a root 
     const merkleRoot = merkleTree.getHexRoot();
    
 
+    // Deploy MerkleDistributor
     const merkleDistributor = await ethers.getContractFactory("MerkleDistributor")
     const Distributor = await merkleDistributor.deploy();
     await Distributor.waitForDeployment();
 
+    // Deploy factory contract
     const Factory = await ethers.getContractFactory("MerkleDistributorFactory")
     const contract = await Factory.deploy();
     await contract.waitForDeployment();
 
 
     
-
+    // interact with the proxy clone contract and set the merkle root and dropAmount
     distributor = await contract.deployDistributor(merkleRoot, 500);
     await distributor;
     
+    // get address of deployed polls
     distributorAddress = await contract.deployedPolls(0); 
 
    
     
   });
 
+  // function to shuffle address
   function shuffle(array) {
     let currentIndex = array.length,
       temporaryValue,
