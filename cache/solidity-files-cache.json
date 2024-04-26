@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/Users/mac/Downloads/Merkle-Airdrop/contracts/MerkleDistributor.sol": {
-      "lastModificationDate": 1713824540704,
-      "contentHash": "26ba0ae162cff132bdd0ca1312728ac5",
+      "lastModificationDate": 1714166422292,
+      "contentHash": "ba24a792fcc767e2f9ac69c423f14420",
       "sourceName": "contracts/MerkleDistributor.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -32,7 +32,8 @@
       },
       "imports": [
         "@openzeppelin/contracts/utils/cryptography/MerkleProof.sol",
-        "@openzeppelin/contracts/token/ERC1155/ERC1155.sol"
+        "@openzeppelin/contracts/token/ERC1155/ERC1155.sol",
+        "@openzeppelin/contracts/proxy/utils/Initializable.sol"
       ],
       "versionPragmas": [
         "^0.8.19"
@@ -390,8 +391,8 @@
       ]
     },
     "/Users/mac/Downloads/Merkle-Airdrop/contracts/MerkleDistributorFactory.sol": {
-      "lastModificationDate": 1713826019735,
-      "contentHash": "4543c1b707d288815ff05f7b15f73467",
+      "lastModificationDate": 1714075914754,
+      "contentHash": "01613bef0653e13b767db73adc52ed2c",
       "sourceName": "contracts/MerkleDistributorFactory.sol",
       "solcConfig": {
         "version": "0.8.20",
@@ -419,13 +420,90 @@
         }
       },
       "imports": [
-        "./MerkleDistributor.sol"
+        "./MerkleDistributor.sol",
+        "@openzeppelin/contracts/proxy/Clones.sol"
       ],
       "versionPragmas": [
         "^0.8.20"
       ],
       "artifacts": [
         "MerkleDistributorFactory"
+      ]
+    },
+    "/Users/mac/Downloads/Merkle-Airdrop/node_modules/@openzeppelin/contracts/proxy/utils/Initializable.sol": {
+      "lastModificationDate": 1713304049474,
+      "contentHash": "5efeb93e6b1c83c754da2846c2da51a7",
+      "sourceName": "@openzeppelin/contracts/proxy/utils/Initializable.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "shanghai",
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [
+        "../../utils/Address.sol"
+      ],
+      "versionPragmas": [
+        "^0.8.2"
+      ],
+      "artifacts": [
+        "Initializable"
+      ]
+    },
+    "/Users/mac/Downloads/Merkle-Airdrop/node_modules/@openzeppelin/contracts/proxy/Clones.sol": {
+      "lastModificationDate": 1713304025942,
+      "contentHash": "89c075565795af5e3e88fc75642a4af8",
+      "sourceName": "@openzeppelin/contracts/proxy/Clones.sol",
+      "solcConfig": {
+        "version": "0.8.20",
+        "settings": {
+          "evmVersion": "shanghai",
+          "optimizer": {
+            "enabled": true,
+            "runs": 1000
+          },
+          "outputSelection": {
+            "*": {
+              "*": [
+                "abi",
+                "evm.bytecode",
+                "evm.deployedBytecode",
+                "evm.methodIdentifiers",
+                "metadata",
+                "storageLayout"
+              ],
+              "": [
+                "ast"
+              ]
+            }
+          }
+        }
+      },
+      "imports": [],
+      "versionPragmas": [
+        "^0.8.0"
+      ],
+      "artifacts": [
+        "Clones"
       ]
     }
   }

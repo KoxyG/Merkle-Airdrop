@@ -5,6 +5,11 @@ const { ethers, defender} = require("hardhat");
 
 async function main() {
   // Deploy the MerkleDistributorFactory contract
+  const Merkle = await ethers.getContractFactory("MerkleDistributor");
+  const merkle = await defender.deployContract(Merkle, {unsafeAllowDeployContract: true});
+  const merkleAirdrop = await merkle.waitForDeployment();
+  console.log("Merkle contract deployed to:", merkleAirdrop.getAddress());
+
   const Factory = await ethers.getContractFactory("MerkleDistributorFactory");
   // const factory = await Factory.deploy();
   const factory = await defender.deployContract(Factory);
